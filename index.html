@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>五子棋游戏</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <h1>五子棋 (19x19)</h1>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="mode-select">游戏模式：</label>
+                <select id="mode-select">
+                    <option value="pvp">本地双人 (PvP)</option>
+                    <option value="pve">人机对战 (PvE)</option>
+                </select>
+            </div>
+            
+            <div class="status">
+                <span id="turn-indicator">当前回合: <b>黑棋</b></span>
+            </div>
+            
+            <button id="restart-btn">重新开始</button>
+            <button id="fullscreen-btn">全屏模式</button>
+        </div>
+
+        <div class="board-container">
+            <canvas id="game-board"></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>

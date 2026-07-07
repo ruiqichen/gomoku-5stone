@@ -1,0 +1,126 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: #f0f2f5;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+    overflow: hidden; /* 防止全屏时出现滚动条 */
+}
+
+.game-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 95vw;
+    max-width: 800px; /* 限制在大屏幕上的最大宽度 */
+    height: 95vh;
+    max-height: 900px;
+}
+
+/* 全屏状态下的容器样式覆盖 */
+:fullscreen .game-container,
+:-webkit-full-screen .game-container,
+:-ms-fullscreen .game-container {
+    width: 100vw;
+    height: 100vh;
+    max-width: none;
+    max-height: none;
+    border-radius: 0;
+    padding: 10px; /* 全屏时减少 padding 给棋盘留空间 */
+}
+
+h1 {
+    color: #333;
+    margin-bottom: 15px;
+    font-size: 1.5rem;
+}
+
+.controls {
+    display: flex;
+    flex-wrap: wrap; /* 允许在小屏幕上换行 */
+    justify-content: center;
+    gap: 15px;
+    width: 100%;
+    margin-bottom: 15px;
+}
+
+.control-group {
+    display: flex;
+    align-items: center;
+}
+
+select {
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+    outline: none;
+}
+
+.status {
+    font-size: 16px;
+    color: #555;
+    display: flex;
+    align-items: center;
+}
+
+button {
+    padding: 8px 16px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.2s;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+.board-container {
+    flex-grow: 1; /* 占据剩余空间 */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 100%;
+    /* 为防止容器塌陷，设置一个最小高度 */
+    min-height: 300px; 
+}
+
+canvas {
+    background-color: #deb887;
+    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
+    cursor: pointer;
+    /* 移除固定宽高，由 JS 动态设置 attributes, 这里通过 CSS 确保它保持正方形显示 */
+    display: block;
+}
+
+@media (max-width: 600px) {
+    h1 {
+        font-size: 1.2rem;
+        margin-bottom: 10px;
+    }
+    .game-container {
+        padding: 10px;
+    }
+    .controls {
+        gap: 8px;
+    }
+    button, select {
+        font-size: 12px;
+        padding: 6px 10px;
+    }
+}
