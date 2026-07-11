@@ -1,0 +1,129 @@
+body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Arial, sans-serif;
+    background-color: #1e272e;
+    color: white;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 100vh;
+}
+
+.app-container {
+    width: 100%;
+    max-width: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 20px;
+    box-sizing: border-box;
+}
+
+.header {
+    width: 100%;
+    text-align: center;
+    margin-bottom: 20px;
+    position: relative;
+}
+
+.back-btn {
+    position: absolute;
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #4bcffa;
+    text-decoration: none;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.header h1 {
+    margin: 0;
+    color: #0be881;
+}
+
+.score-board {
+    margin-top: 10px;
+    font-size: 18px;
+    color: #d2dae2;
+}
+
+.game-area {
+    background-color: #000;
+    border: 4px solid #0be881;
+    border-radius: 8px;
+    box-shadow: 0 0 20px rgba(11, 232, 129, 0.3);
+}
+
+canvas {
+    display: block;
+}
+
+.controls {
+    margin-top: 20px;
+    display: flex;
+    gap: 15px;
+}
+
+button {
+    background-color: #0be881;
+    color: #1e272e;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    font-size: 16px;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s, transform 0.1s;
+}
+
+button:hover {
+    background-color: #05c46b;
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+#fullscreen-btn {
+    background-color: #808e9b;
+    color: white;
+}
+
+/* 移动端方向盘 */
+.d-pad {
+    display: none;
+    margin-top: 30px;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+}
+
+.d-pad-middle {
+    display: flex;
+    gap: 40px;
+}
+
+.dir-btn {
+    width: 60px;
+    height: 60px;
+    border-radius: 50%;
+    font-size: 24px;
+    background-color: rgba(255, 255, 255, 0.1);
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 0;
+}
+
+.dir-btn:active {
+    background-color: rgba(255, 255, 255, 0.3);
+}
+
+@media (max-width: 600px) {
+    .d-pad {
+        display: flex;
+    }
+}

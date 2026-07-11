@@ -3,53 +3,140 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>五子棋游戏</title>
-    <!-- PWA Meta Tags -->
+    <title>经典游戏中心</title>
     <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#ffffff">
-    <link rel="icon" href="icon.svg" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="icon.svg">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="五子棋">
-    
-    <link rel="stylesheet" href="style.css">
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f0f2f5;
+            margin: 0;
+            padding: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+        }
+        
+        .header {
+            background-color: #2c3e50;
+            color: white;
+            width: 100%;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 2px;
+        }
+
+        .game-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 30px;
+            width: 90%;
+            max-width: 1000px;
+            padding: 20px;
+        }
+
+        .game-card {
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.05);
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+            text-decoration: none;
+            color: inherit;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .game-card:hover {
+            transform: translateY(-8px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.1);
+        }
+
+        .card-cover {
+            height: 160px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 64px;
+            background: linear-gradient(135deg, #74ebd5 0%, #9face6 100%);
+        }
+        
+        .card-cover.snake-cover {
+            background: linear-gradient(135deg, #a8e063 0%, #56ab2f 100%);
+        }
+
+        .card-content {
+            padding: 20px;
+            text-align: center;
+        }
+
+        .card-content h2 {
+            margin: 0 0 10px 0;
+            font-size: 22px;
+            color: #333;
+        }
+
+        .card-content p {
+            margin: 0;
+            color: #666;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+        
+        .play-btn {
+            display: inline-block;
+            margin-top: 15px;
+            padding: 8px 24px;
+            background-color: #3498db;
+            color: white;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+    </style>
 </head>
 <body>
-    <div class="game-container">
-        <h1>五子棋 (19x19)</h1>
-        
-        <div class="controls">
-            <div class="control-group">
-                <label for="mode-select">游戏模式：</label>
-                <select id="mode-select">
-                    <option value="pvp">本地双人 (PvP)</option>
-                    <option value="pve">人机对战 (PvE)</option>
-                </select>
-            </div>
-            
-            <div class="status">
-                <span id="turn-indicator">当前回合: <b>黑棋</b></span>
-            </div>
-            
-            <button id="undo-btn">悔棋</button>
-            <button id="restart-btn">重新开始</button>
-            <button id="fullscreen-btn">全屏模式</button>
-        </div>
 
-        <div class="board-container">
-            <canvas id="game-board"></canvas>
-        </div>
+    <div class="header">
+        <h1>🎮 经典游戏中心</h1>
     </div>
 
-    <script src="script.js"></script>
+    <div class="game-grid">
+        <!-- 五子棋入口 -->
+        <a href="gomoku/index.html" class="game-card">
+            <div class="card-cover">⚫⚪</div>
+            <div class="card-content">
+                <h2>五子棋</h2>
+                <p>支持双人对战与简单人机对战模式的经典五子棋游戏。</p>
+                <span class="play-btn">开始游戏</span>
+            </div>
+        </a>
+
+        <!-- 贪吃蛇入口 -->
+        <a href="snake/index.html" class="game-card">
+            <div class="card-cover snake-cover">🐍</div>
+            <div class="card-content">
+                <h2>贪吃蛇</h2>
+                <p>重温经典，控制蛇吃食物，挑战最高分数！</p>
+                <span class="play-btn" style="background-color: #27ae60;">开始游戏</span>
+            </div>
+        </a>
+    </div>
+
     <script>
-        // 注册 Service Worker，使应用支持离线和 PWA 安装
+        // 简单的 PWA 注册逻辑 (如果适用)
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./sw.js')
-                    .then(registration => console.log('SW 注册成功:', registration.scope))
-                    .catch(err => console.log('SW 注册失败:', err));
+                navigator.serviceWorker.register('sw.js').catch(err => {
+                    console.log('SW registration failed: ', err);
+                });
             });
         }
     </script>

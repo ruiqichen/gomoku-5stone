@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>五子棋游戏</title>
+    <!-- PWA Meta Tags -->
+    <link rel="manifest" href="../manifest.json">
+    <meta name="theme-color" content="#ffffff">
+    <link rel="icon" href="../icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="../icon.svg">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="五子棋">
+    
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <div style="position: relative; width: 100%; text-align: center; margin-bottom: 10px;">
+            <a href="../index.html" style="position: absolute; left: 0; top: 50%; transform: translateY(-50%); color: #4CAF50; text-decoration: none; font-weight: bold; font-size: 14px;">⬅ 返回大厅</a>
+            <h1 style="margin: 0;">五子棋 (19x19)</h1>
+        </div>
+        
+        <div class="controls">
+            <div class="control-group">
+                <label for="mode-select">游戏模式：</label>
+                <select id="mode-select">
+                    <option value="pvp">本地双人 (PvP)</option>
+                    <option value="pve">人机对战 (PvE)</option>
+                </select>
+            </div>
+            
+            <div class="status">
+                <span id="turn-indicator">当前回合: <b>黑棋</b></span>
+            </div>
+            
+            <button id="undo-btn">悔棋</button>
+            <button id="restart-btn">重新开始</button>
+            <button id="fullscreen-btn">全屏模式</button>
+        </div>
+
+        <div class="board-container">
+            <canvas id="game-board"></canvas>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+    <script>
+        // 注册 Service Worker，使应用支持离线和 PWA 安装
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js')
+                    .then(registration => console.log('SW 注册成功:', registration.scope))
+                    .catch(err => console.log('SW 注册失败:', err));
+            });
+        }
+    </script>
+</body>
+</html>

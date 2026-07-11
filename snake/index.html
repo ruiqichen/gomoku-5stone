@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>经典贪吃蛇</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="app-container">
+        <div class="header">
+            <a href="../index.html" class="back-btn">⬅ 返回大厅</a>
+            <h1>经典贪吃蛇</h1>
+            <div class="score-board">分数: <span id="score">0</span> | 最高分: <span id="high-score">0</span></div>
+        </div>
+
+        <div class="game-area">
+            <canvas id="gameCanvas" width="400" height="400"></canvas>
+        </div>
+
+        <div class="controls">
+            <button id="start-btn">开始游戏</button>
+            <button id="fullscreen-btn">全屏模式</button>
+        </div>
+
+        <!-- 移动端虚拟按键 -->
+        <div class="d-pad">
+            <button class="dir-btn up" id="btn-up">⬆️</button>
+            <div class="d-pad-middle">
+                <button class="dir-btn left" id="btn-left">⬅️</button>
+                <button class="dir-btn right" id="btn-right">➡️</button>
+            </div>
+            <button class="dir-btn down" id="btn-down">⬇️</button>
+        </div>
+    </div>
+    
+    <script src="script.js"></script>
+</body>
+</html>
