@@ -3,6 +3,7 @@ const ctx = canvas.getContext('2d');
 const modeSelect = document.getElementById('mode-select');
 const turnIndicator = document.getElementById('turn-indicator');
 const restartBtn = document.getElementById('restart-btn');
+const undoBtn = document.getElementById('undo-btn');
 const fullscreenBtn = document.getElementById('fullscreen-btn');
 const boardContainer = document.querySelector('.board-container');
 
@@ -17,6 +18,7 @@ const BLACK = 1;
 const WHITE = 2;
 
 let board = [];
+let moveHistory = [];
 let currentPlayer = BLACK;
 let isGameOver = false;
 let gameMode = modeSelect.value; // 'pvp' or 'pve'
@@ -51,6 +53,7 @@ window.addEventListener('resize', resizeCanvas);
 // 初始化棋盘数据
 function initBoardData() {
     board = [];
+    moveHistory = [];
     for (let i = 0; i < BOARD_SIZE; i++) {
         board[i] = new Array(BOARD_SIZE).fill(EMPTY);
     }
@@ -248,6 +251,7 @@ function evaluatePosition(x, y, player) {
 function placeStone(i, j) {
     if (isGameOver || board[i][j] !== EMPTY) return;
 
+    moveHistory.push({ i, j, player: currentPlayer });
     board[i][j] = currentPlayer;
     drawBoard(); // 重画棋盘以去除之前的最新落子标记
     redrawAllStones();
@@ -310,6 +314,47 @@ function resetGame() {
     updateUI();
 }
 
+// 悔棋逻辑
+function undoMove() {
+    if (moveHistory.length === 0) return;
+
+    let stepsToUndo = 1;
+    if (gameMode === 'pve' && !isGameOver && currentPlayer === BLACK) {
+        stepsToUndo = 2; // 人机模式下，轮到玩家时（机器刚下完），需撤回两步
+    } else if (gameMode === 'pve' && isGameOver) {
+        const lastMove = moveHistory[moveHistory.length - 1];
+        if (lastMove.player === WHITE) {
+             stepsToUndo = 2; // 机器赢了，退两步回到玩家下棋前
+        }
+    }
+    
+    stepsToUndo = Math.min(stepsToUndo, moveHistory.length);
+
+    for (let step = 0; step < stepsToUndo; step++) {
+        const lastMove = moveHistory.pop();
+        board[lastMove.i][lastMove.j] = EMPTY;
+        currentPlayer = lastMove.player;
+    }
+
+    isGameOver = false; // 悔棋后恢复游戏状态
+    updateUI();
+    
+    drawBoard();
+    redrawAllStones();
+    
+    // 如果还有历史记录，重新标记最新的落子
+    if (moveHistory.length > 0) {
+        const last = moveHistory[moveHistory.length - 1];
+        const cx = MARGIN + last.i * CELL_SIZE;
+        const cy = MARGIN + last.j * CELL_SIZE;
+        ctx.beginPath();
+        ctx.arc(cx, cy, STONE_RADIUS * 0.3, 0, 2 * Math.PI);
+        ctx.fillStyle = 'red';
+        ctx.fill();
+    }
+}
+
+undoBtn.addEventListener('click', undoMove);
 restartBtn.addEventListener('click', resetGame);
 modeSelect.addEventListener('change', resetGame);
 
