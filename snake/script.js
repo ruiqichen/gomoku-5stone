@@ -201,8 +201,23 @@ function checkGameOver() {
     }
 }
 
+let lastRenderTime = 0;
+const SNAKE_SPEED = 8; // 每秒移动的格子数 (替代原先的 setInterval 120ms)
+
+function gameLoopFunc(currentTime) {
+    if (!isPlaying) return;
+    
+    gameLoop = requestAnimationFrame(gameLoopFunc);
+    
+    const secondsSinceLastRender = (currentTime - lastRenderTime) / 1000;
+    if (secondsSinceLastRender < 1 / SNAKE_SPEED) return;
+    
+    lastRenderTime = currentTime;
+    drawGame();
+}
+
 function gameOver() {
-    clearInterval(gameLoop);
+    cancelAnimationFrame(gameLoop);
     isPlaying = false;
     startBtn.textContent = 'START GAME';
     playSound('die');
@@ -222,7 +237,8 @@ function startGame() {
     initGame();
     isPlaying = true;
     startBtn.textContent = 'PLAYING...';
-    gameLoop = setInterval(drawGame, 120); // 调整了一点速度
+    lastRenderTime = performance.now();
+    gameLoop = requestAnimationFrame(gameLoopFunc);
 }
 
 // 键盘控制

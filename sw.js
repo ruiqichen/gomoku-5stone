@@ -1,11 +1,18 @@
-const CACHE_NAME = 'gomoku-v1';
+const CACHE_NAME = 'classic-games-hub-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
-  './style.css',
-  './script.js',
   './manifest.json',
-  './icon.svg'
+  './icon.svg',
+  './gomoku/index.html',
+  './gomoku/style.css',
+  './gomoku/script.js',
+  './snake/index.html',
+  './snake/style.css',
+  './snake/script.js',
+  './xiangqi/index.html',
+  './xiangqi/style.css',
+  './xiangqi/script.js'
 ];
 
 // 安装 Service Worker 并缓存资源

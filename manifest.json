@@ -1,11 +1,11 @@
 {
-  "name": "五子棋 (Gomoku)",
-  "short_name": "五子棋",
-  "description": "跨平台 HTML5 五子棋网页游戏",
+  "name": "经典游戏中心",
+  "short_name": "游戏中心",
+  "description": "跨平台 HTML5 经典游戏合集 (五子棋、贪吃蛇、中国象棋)",
   "start_url": "./index.html",
   "display": "standalone",
   "background_color": "#f0f2f5",
-  "theme_color": "#ffffff",
+  "theme_color": "#1e3c72",
   "orientation": "portrait-primary",
   "icons": [
     {

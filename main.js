@@ -8,7 +8,7 @@ function createWindow () {
     height: 900,
     minWidth: 400,
     minHeight: 500,
-    icon: path.join(__dirname, 'icon.png'), // 这里如果没 png 暂时用默认
+    icon: path.join(__dirname, 'icon.svg'), // 使用 svg
     webPreferences: {
       nodeIntegration: false,
       contextIsolation: true
