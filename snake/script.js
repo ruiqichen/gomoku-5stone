@@ -23,7 +23,7 @@ let isPlaying = false;
 // 调整 Canvas 适应屏幕
 function resizeCanvas() {
     const containerWidth = document.querySelector('.app-container').clientWidth - 40;
-    const size = Math.min(400, containerWidth);
+    const size = Math.min(600, containerWidth);
     // 保持 gridSize 比例
     canvas.width = Math.floor(size / gridSize) * gridSize;
     canvas.height = canvas.width;
