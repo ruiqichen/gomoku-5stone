@@ -240,90 +240,173 @@ function checkWin(x, y, player) {
     return false;
 }
 
-// AI 逻辑 (极简启发式评估)
+// --- 进阶 AI 逻辑 ---
 function aiMove() {
     if (isGameOver || gameMode !== 'pve' || currentPlayer !== WHITE) return;
     
-    let bestScore = -1;
-    let bestMoves = [];
+    const diffSelect = document.getElementById('diff-select');
+    const difficulty = diffSelect ? diffSelect.value : 'medium';
 
-    // 评估每个空位的得分
+    let bestMove;
+    if (difficulty === 'easy') {
+        bestMove = calculateHeuristicMove(true); // 带极大噪音的新手模式
+    } else if (difficulty === 'medium') {
+        bestMove = calculateHeuristicMove(false); // 纯粹的形状匹配启发式
+    } else {
+        bestMove = calculateHardMove(); // 深度为2的极小极大搜索
+    }
+
+    if (bestMove) {
+        placeStone(bestMove[0], bestMove[1]);
+    }
+}
+
+// 获取候选落子点 (仅搜索已有棋子周围半径 2 格内的空位，大幅提升性能)
+function getCandidateMoves(testBoard) {
+    let candidates = [];
+    let hasStone = false;
+    let visited = Array.from({length: BOARD_SIZE}, () => new Array(BOARD_SIZE).fill(false));
+    
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
-            if (board[i][j] === EMPTY) {
-                // 进攻分（白棋自己）和 防守分（黑棋）
-                let score = evaluatePosition(i, j, WHITE) + evaluatePosition(i, j, BLACK) * 0.8;
-                
-                if (score > bestScore) {
-                    bestScore = score;
-                    bestMoves = [[i, j]];
-                } else if (score === bestScore) {
-                    bestMoves.push([i, j]);
+            if (testBoard[i][j] !== EMPTY) {
+                hasStone = true;
+                for(let di = -2; di <= 2; di++){
+                    for(let dj = -2; dj <= 2; dj++){
+                        let ni = i + di, nj = j + dj;
+                        if(ni >= 0 && ni < BOARD_SIZE && nj >= 0 && nj < BOARD_SIZE && testBoard[ni][nj] === EMPTY && !visited[ni][nj]){
+                            visited[ni][nj] = true;
+                            candidates.push({i: ni, j: nj});
+                        }
+                    }
                 }
             }
         }
     }
-
-    // 随机选择一个最高分的落子点，增加变化
-    if (bestMoves.length > 0) {
-        const move = bestMoves[Math.floor(Math.random() * bestMoves.length)];
-        placeStone(move[0], move[1]);
-    }
+    if (!hasStone) return [{i: 9, j: 9}]; // 第一手下天元
+    return candidates;
 }
 
-// 评估某个位置对某个玩家的价值 (简化版评分规则)
-function evaluatePosition(x, y, player) {
-    let totalScore = 0;
-    const directions = [ [1, 0], [0, 1], [1, 1], [1, -1] ];
-
-    for (let dir of directions) {
-        let consecutive = 1;
-        let blocked = 0;
-        const [dx, dy] = dir;
-
-        // 正向
-        let i = x + dx;
-        let j = y + dy;
-        while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && board[i][j] === player) {
-            consecutive++;
-            i += dx;
-            j += dy;
+// 启发式评估搜索
+function calculateHeuristicMove(addNoise) {
+    let bestScore = -Infinity;
+    let bestMoves = [];
+    let candidates = getCandidateMoves(board);
+    
+    for (let c of candidates) {
+        let score = evaluatePosition(board, c.i, c.j, WHITE) + evaluatePosition(board, c.i, c.j, BLACK) * 0.9;
+        if (addNoise) score += Math.random() * 5000; // 给新手模式加巨大的噪音
+        
+        if (score > bestScore) {
+            bestScore = score;
+            bestMoves = [[c.i, c.j]];
+        } else if (score === bestScore) {
+            bestMoves.push([c.i, c.j]);
         }
-        if (i < 0 || i >= BOARD_SIZE || j < 0 || j >= BOARD_SIZE || board[i][j] !== EMPTY) {
-            blocked++;
-        }
+    }
+    return bestMoves[Math.floor(Math.random() * bestMoves.length)];
+}
 
-        // 反向
-        i = x - dx;
-        j = y - dy;
-        while (i >= 0 && i < BOARD_SIZE && j >= 0 && j < BOARD_SIZE && board[i][j] === player) {
-            consecutive++;
-            i -= dx;
-            j -= dy;
+// 困难模式: 深度为 2 的迷你 Max 搜索 (我方下一步 -> 敌方应对 -> 评估)
+function calculateHardMove() {
+    let candidates = getCandidateMoves(board);
+    if (candidates.length === 0) return [9, 9];
+    
+    // 1. 初步剪枝：给候选点打基础分并排序
+    for (let c of candidates) {
+        c.score = evaluatePosition(board, c.i, c.j, WHITE) + evaluatePosition(board, c.i, c.j, BLACK) * 1.1; // 困难模式防御权重略高
+        // 若能直接赢或必须堵死，直接返回
+        if (c.score >= 500000) return [c.i, c.j]; 
+    }
+    
+    // 只取前 12 个最优解进行深度搜索，防止 JS 线程卡死
+    candidates.sort((a, b) => b.score - a.score);
+    let bestCands = candidates.slice(0, 12);
+    
+    let bestMove = bestCands[0];
+    let maxScore = -Infinity;
+    
+    // 模拟我方的每一种可能走法
+    for (let myMove of bestCands) {
+        board[myMove.i][myMove.j] = WHITE;
+        
+        let enemyCandidates = getCandidateMoves(board);
+        let minScore = Infinity;
+        
+        // 快速评估敌方应对
+        for(let ec of enemyCandidates) {
+            ec.score = evaluatePosition(board, ec.i, ec.j, BLACK) + evaluatePosition(board, ec.i, ec.j, WHITE) * 1.1;
         }
-        if (i < 0 || i >= BOARD_SIZE || j < 0 || j >= BOARD_SIZE || board[i][j] !== EMPTY) {
-            blocked++;
+        enemyCandidates.sort((a,b) => b.score - a.score);
+        let bestEnemyCands = enemyCandidates.slice(0, 5); // 考虑敌方的 5 种最强反击
+        
+        for (let enemyMove of bestEnemyCands) {
+            board[enemyMove.i][enemyMove.j] = BLACK;
+            
+            // 评估在这条分支下的局面总分 (我的优势减去敌方优势)
+            // 这里为了性能，简化为：我刚才那一手的得分 - 敌方反击的得分
+            let currentScore = myMove.score - enemyMove.score * 1.5; 
+            
+            board[enemyMove.i][enemyMove.j] = EMPTY;
+            
+            if (currentScore < minScore) {
+                minScore = currentScore; // 敌方会选择让我得分最低的走法
+            }
         }
-
-        // 评分规则
-        if (consecutive >= 5) {
-            totalScore += 100000;
-        } else if (consecutive === 4) {
-            if (blocked === 0) totalScore += 10000;
-            else if (blocked === 1) totalScore += 1000;
-        } else if (consecutive === 3) {
-            if (blocked === 0) totalScore += 1000;
-            else if (blocked === 1) totalScore += 100;
-        } else if (consecutive === 2) {
-            if (blocked === 0) totalScore += 100;
-            else if (blocked === 1) totalScore += 10;
+        
+        board[myMove.i][myMove.j] = EMPTY;
+        
+        if (minScore > maxScore) {
+            maxScore = minScore; // 我方要在敌方最优反击下，选一个最不坏的结果
+            bestMove = myMove;
         }
     }
     
-    // 给中心点一些基础分数，让AI初期尽量往中间下
+    return [bestMove.i, bestMove.j];
+}
+
+// 核心形状匹配打分引擎
+function evaluatePosition(testBoard, x, y, player) {
+    let totalScore = 0;
+    const directions = [ [1, 0], [0, 1], [1, 1], [1, -1] ];
+    
+    for (let dir of directions) {
+        let line = [];
+        const [dx, dy] = dir;
+        
+        // 获取前后共 9 个位置的棋子状态
+        for (let step = -4; step <= 4; step++) {
+            if (step === 0) {
+                line.push(player);
+                continue;
+            }
+            let nx = x + dx * step;
+            let ny = y + dy * step;
+            if (nx >= 0 && nx < BOARD_SIZE && ny >= 0 && ny < BOARD_SIZE) {
+                line.push(testBoard[nx][ny]);
+            } else {
+                line.push(-1); // 墙壁边界
+            }
+        }
+        
+        // 转换为字符串进行强力模式匹配: P=自己, E=空, O=对手/墙壁
+        let str = line.map(p => p === player ? 'P' : p === EMPTY ? 'E' : 'O').join('');
+        
+        // 核心评分逻辑
+        if (str.includes('PPPPP')) totalScore += 1000000; // 连五
+        else if (str.includes('EPPPPE')) totalScore += 100000; // 活四
+        else if (str.includes('EPPPPO') || str.includes('OPPPPE') || str.includes('EPPEPPE') || str.includes('EPPPEPE')) totalScore += 10000; // 冲四 (含跳四)
+        else if (str.includes('EPPPE')) totalScore += 5000; // 活三
+        else if (str.includes('EPPEPE') || str.includes('EPEPPE')) totalScore += 4500; // 跳活三
+        else if (str.includes('OPPPE') || str.includes('EPPPO') || str.includes('OPPEPE') || str.includes('EPEPPO')) totalScore += 500; // 眠三
+        else if (str.includes('EPPE')) totalScore += 100; // 活二
+        else if (str.includes('EPEPE')) totalScore += 80; // 跳二
+        else if (str.includes('EPE')) totalScore += 10; // 单子潜力
+    }
+    
+    // 增加中心距离权重，鼓励往中间下
     const centerDist = Math.abs(x - 9) + Math.abs(y - 9);
     totalScore += (18 - centerDist);
-
     return totalScore;
 }
 
@@ -392,6 +475,12 @@ function resetGame() {
     currentPlayer = BLACK;
     isGameOver = false;
     gameMode = modeSelect.value;
+    
+    const diffSelect = document.getElementById('diff-select');
+    if (diffSelect) {
+        diffSelect.style.display = gameMode === 'pve' ? 'inline-block' : 'none';
+    }
+    
     updateUI();
 }
 
