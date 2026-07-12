@@ -33,6 +33,10 @@ function playCaptureSound() {
     playTone(200, 'sawtooth', 0.15, 0.6);
     setTimeout(() => playTone(100, 'square', 0.2, 0.4), 50);
 }
+function playCheckSound() {
+    playTone(400, 'square', 0.1, 0.5);
+    setTimeout(() => playTone(600, 'sawtooth', 0.2, 0.6), 100);
+}
 function playWinSound() {
     [523.25, 659.25, 783.99, 1046.50].forEach((freq, i) => {
         setTimeout(() => playTone(freq, 'sine', 0.3, 0.5), i * 150);
@@ -58,6 +62,19 @@ let selectedPiece = null; // {r, c}
 let moveHistory = [];
 let isGameOver = false;
 let gameMode = 'pve';
+
+// 显示将军动画
+function showCheckToast() {
+    const toast = document.getElementById('check-toast');
+    if (!toast) return;
+    toast.style.opacity = '1';
+    toast.style.transform = 'translate(-50%, -50%) scale(1)';
+    playCheckSound();
+    setTimeout(() => {
+        toast.style.opacity = '0';
+        toast.style.transform = 'translate(-50%, -50%) scale(1.5)';
+    }, 1000);
+}
 
 // 初始化棋盘
 function initBoard() {
@@ -349,18 +366,43 @@ function isFlyingGeneral(state) {
     return true;
 }
 
+// 检测某一方的将被将军 (被对方任何棋子攻击)
+function isKingInCheck(state, player) {
+    let kr = -1, kc = -1;
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (state[r][c] && state[r][c].type === 'k' && state[r][c].color === player) {
+                kr = r; kc = c; break;
+            }
+        }
+        if (kr !== -1) break;
+    }
+    if (kr === -1) return false; // 将被吃了 (游戏结束的瞬间)
+
+    const enemy = player === RED ? BLACK : RED;
+    for (let r = 0; r < ROWS; r++) {
+        for (let c = 0; c < COLS; c++) {
+            if (state[r][c] && state[r][c].color === enemy) {
+                if (isValidMove(r, c, kr, kc, state, enemy)) return true;
+            }
+        }
+    }
+    return false;
+}
+
 function executeMove(sr, sc, tr, tc) {
     const target = board[tr][tc];
     const piece = board[sr][sc];
     
-    // 模拟落子，检查是否导致飞将
+    // 模拟落子，检查是否送将或导致飞将
     board[tr][tc] = piece;
     board[sr][sc] = null;
-    if (isFlyingGeneral(board)) {
+    
+    if (isFlyingGeneral(board) || isKingInCheck(board, currentPlayer)) {
         // 回退
         board[sr][sc] = piece;
         board[tr][tc] = target;
-        if(currentPlayer === RED || gameMode === 'pvp') alert("不能送将/飞将！");
+        if(currentPlayer === RED || gameMode === 'pvp') alert("非法落子：不能送将/被将军时不应将/不能飞将！");
         return false;
     }
     
@@ -381,7 +423,13 @@ function executeMove(sr, sc, tr, tc) {
     moveHistory.push({ sr, sc, tr, tc, piece, target });
     
     if (!isGameOver) {
-        currentPlayer = currentPlayer === RED ? BLACK : RED;
+        const nextPlayer = currentPlayer === RED ? BLACK : RED;
+        // 检查这一步是否将了对方的军
+        if (isKingInCheck(board, nextPlayer)) {
+            showCheckToast();
+        }
+        
+        currentPlayer = nextPlayer;
         updateUI();
         if (gameMode === 'pve' && currentPlayer === BLACK) {
             setTimeout(aiMove, 50);
@@ -520,7 +568,7 @@ function getAllLegalMoves(state, player) {
                             const target = state[tr][tc];
                             state[tr][tc] = piece;
                             state[sr][sc] = null;
-                            if (!isFlyingGeneral(state)) {
+                            if (!isFlyingGeneral(state) && !isKingInCheck(state, player)) {
                                 moves.push({sr, sc, tr, tc, piece, target});
                             }
                             state[sr][sc] = piece;
