@@ -16,6 +16,12 @@
 
         <div class="game-area">
             <canvas id="gameCanvas" width="400" height="400"></canvas>
+            <!-- 游戏结束覆盖层 -->
+            <div class="modal-overlay" id="game-over-modal">
+                <div class="modal-title">GAME OVER</div>
+                <div class="modal-score">FINAL SCORE: <span id="final-score">0</span></div>
+                <button id="modal-restart-btn">PLAY AGAIN</button>
+            </div>
         </div>
 
         <div class="controls">

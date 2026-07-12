@@ -23,6 +23,56 @@ let currentPlayer = BLACK;
 let isGameOver = false;
 let gameMode = modeSelect.value; // 'pvp' or 'pve'
 
+// 音效系统 (Web Audio API)
+const AudioContext = window.AudioContext || window.webkitAudioContext;
+const audioCtx = new AudioContext();
+
+function playTone(freq, type, duration, vol) {
+    if (audioCtx.state === 'suspended') audioCtx.resume();
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+    osc.type = type;
+    osc.frequency.setValueAtTime(freq, audioCtx.currentTime);
+    
+    gain.gain.setValueAtTime(vol, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + duration);
+    
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+    
+    osc.start();
+    osc.stop(audioCtx.currentTime + duration);
+}
+
+function playStoneSound() {
+    playTone(400, 'sine', 0.1, 0.5); // 清脆的落子声
+    setTimeout(() => playTone(800, 'triangle', 0.05, 0.2), 20); // 细微的余音
+}
+
+function playWinSound() {
+    playTone(523.25, 'sine', 0.2, 0.5); // C5
+    setTimeout(() => playTone(659.25, 'sine', 0.2, 0.5), 150); // E5
+    setTimeout(() => playTone(783.99, 'sine', 0.4, 0.5), 300); // G5
+    setTimeout(() => playTone(1046.50, 'sine', 0.6, 0.5), 450); // C6
+}
+
+// 模态框逻辑
+const modal = document.getElementById('game-over-modal');
+const winnerText = document.getElementById('winner-text');
+const modalRestartBtn = document.getElementById('modal-restart-btn');
+
+function showWinModal(player) {
+    winnerText.textContent = `${player === BLACK ? '黑棋' : '白棋'} 获胜！`;
+    winnerText.style.color = player === BLACK ? '#34495e' : '#ecf0f1';
+    modal.classList.add('show');
+    playWinSound();
+}
+
+modalRestartBtn.addEventListener('click', () => {
+    modal.classList.remove('show');
+    resetGame();
+});
+
 // 动态调整 Canvas 尺寸以适应容器
 function resizeCanvas() {
     // 获取容器的可用宽高
@@ -283,20 +333,25 @@ function placeStone(i, j) {
 
     moveHistory.push({ i, j, player: currentPlayer });
     board[i][j] = currentPlayer;
+    
+    playStoneSound(); // 播放落子音效
+
     drawBoard(); // 重画棋盘以去除之前的最新落子标记
     redrawAllStones();
     
-    // 给当前落子加个红点标记
+    // 给当前落子加个红点标记，使其更加醒目
     const cx = MARGIN + i * CELL_SIZE;
     const cy = MARGIN + j * CELL_SIZE;
     ctx.beginPath();
     ctx.arc(cx, cy, STONE_RADIUS * 0.3, 0, 2 * Math.PI);
-    ctx.fillStyle = 'red';
+    ctx.fillStyle = '#ff4757'; // 更鲜艳的红色
+    ctx.shadowOffsetX = 0; ctx.shadowOffsetY = 0; ctx.shadowBlur = 4; ctx.shadowColor = '#ff4757';
     ctx.fill();
+    ctx.shadowBlur = 0; // 重置阴影
 
     if (checkWin(i, j, currentPlayer)) {
-        setTimeout(() => alert(`${currentPlayer === BLACK ? '黑棋' : '白棋'} 获胜！`), 100);
         isGameOver = true;
+        setTimeout(() => showWinModal(currentPlayer), 100);
         return;
     }
 
@@ -375,8 +430,10 @@ function undoMove() {
         const cy = MARGIN + last.j * CELL_SIZE;
         ctx.beginPath();
         ctx.arc(cx, cy, STONE_RADIUS * 0.3, 0, 2 * Math.PI);
-        ctx.fillStyle = 'red';
+        ctx.fillStyle = '#ff4757';
+        ctx.shadowBlur = 4; ctx.shadowColor = '#ff4757';
         ctx.fill();
+        ctx.shadowBlur = 0;
     }
 }
 

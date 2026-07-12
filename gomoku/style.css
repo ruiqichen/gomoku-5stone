@@ -5,30 +5,33 @@
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: #f0f2f5;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    background: radial-gradient(circle at center, #2c3e50 0%, #1a1a1a 100%);
+    color: #ecf0f1;
     display: flex;
     justify-content: center;
     align-items: center;
     min-height: 100vh;
-    overflow: hidden; /* 防止全屏时出现滚动条 */
+    overflow: hidden;
 }
 
 .game-container {
-    background-color: white;
-    padding: 20px;
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    padding: 25px;
+    border-radius: 20px;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
     align-items: center;
     width: 95vw;
-    max-width: 800px; /* 限制在大屏幕上的最大宽度 */
+    max-width: 800px;
     height: 95vh;
     max-height: 900px;
 }
 
-/* 全屏状态下的容器样式覆盖 */
 :fullscreen .game-container,
 :-webkit-full-screen .game-container,
 :-ms-fullscreen .game-container {
@@ -37,90 +40,197 @@ body {
     max-width: none;
     max-height: none;
     border-radius: 0;
-    padding: 10px; /* 全屏时减少 padding 给棋盘留空间 */
+    border: none;
+    padding: 15px;
+    background: #1a1a1a;
 }
 
 h1 {
-    color: #333;
-    margin-bottom: 15px;
-    font-size: 1.5rem;
+    color: #fff;
+    margin-bottom: 20px;
+    font-size: 1.8rem;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+    letter-spacing: 2px;
 }
 
 .controls {
     display: flex;
-    flex-wrap: wrap; /* 允许在小屏幕上换行 */
+    flex-wrap: wrap;
     justify-content: center;
+    align-items: center;
     gap: 15px;
     width: 100%;
-    margin-bottom: 15px;
+    margin-bottom: 20px;
+    background: rgba(0,0,0,0.2);
+    padding: 12px;
+    border-radius: 12px;
 }
 
 .control-group {
     display: flex;
     align-items: center;
+    gap: 8px;
+}
+
+label {
+    font-size: 14px;
+    color: #bdc3c7;
 }
 
 select {
-    padding: 8px;
-    border-radius: 6px;
-    border: 1px solid #ccc;
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid rgba(255,255,255,0.2);
+    background: #34495e;
+    color: white;
     font-size: 14px;
     outline: none;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+select:hover {
+    background: #3b536b;
 }
 
 .status {
-    font-size: 16px;
-    color: #555;
+    font-size: 15px;
+    padding: 8px 16px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 20px;
+    color: #ecf0f1;
     display: flex;
     align-items: center;
+    border: 1px solid rgba(255,255,255,0.1);
+}
+
+.status b {
+    color: #f1c40f;
+    margin-left: 5px;
 }
 
 button {
-    padding: 8px 16px;
-    background-color: #007bff;
+    padding: 9px 18px;
+    background: linear-gradient(135deg, #2980b9, #2c3e50);
     color: white;
-    border: none;
-    border-radius: 6px;
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 8px;
     cursor: pointer;
     font-size: 14px;
-    transition: background-color 0.2s;
+    font-weight: 600;
+    letter-spacing: 1px;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.2);
 }
 
 button:hover {
-    background-color: #0056b3;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0,0,0,0.3);
+    background: linear-gradient(135deg, #3498db, #2c3e50);
+}
+
+button:active {
+    transform: translateY(0);
+}
+
+#undo-btn {
+    background: linear-gradient(135deg, #e67e22, #d35400);
+}
+#undo-btn:hover {
+    background: linear-gradient(135deg, #f39c12, #d35400);
 }
 
 .board-container {
-    flex-grow: 1; /* 占据剩余空间 */
+    flex-grow: 1;
     display: flex;
     justify-content: center;
     align-items: center;
     width: 100%;
-    /* 为防止容器塌陷，设置一个最小高度 */
     min-height: 300px; 
 }
 
 canvas {
-    background-color: #deb887;
-    box-shadow: 2px 2px 8px rgba(0, 0, 0, 0.3);
-    cursor: pointer;
-    /* 移除固定宽高，由 JS 动态设置 attributes, 这里通过 CSS 确保它保持正方形显示 */
+    /* 使用 CSS 渐变模拟实木纹理和边缘阴影 */
+    background: radial-gradient(circle at center, #e8b982 0%, #c99351 100%);
+    border: 8px solid #5c3a21;
+    border-radius: 4px;
+    box-shadow: 
+        inset 0 0 20px rgba(0,0,0,0.3),
+        0 10px 30px rgba(0, 0, 0, 0.6),
+        0 0 0 1px #3a2211;
+    cursor: crosshair;
     display: block;
+}
+
+/* 模态框样式 (替代 alert) */
+.modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0, 0, 0, 0.7);
+    display: none;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    backdrop-filter: blur(4px);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+    display: flex;
+    opacity: 1;
+}
+
+.modal-content {
+    background: linear-gradient(135deg, #2c3e50, #1a252f);
+    padding: 40px 60px;
+    border-radius: 16px;
+    text-align: center;
+    border: 1px solid rgba(255,255,255,0.1);
+    box-shadow: 0 20px 50px rgba(0,0,0,0.5);
+    transform: scale(0.8);
+    transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.modal-overlay.show .modal-content {
+    transform: scale(1);
+}
+
+.modal-title {
+    font-size: 32px;
+    color: #f1c40f;
+    margin-bottom: 20px;
+    text-shadow: 0 2px 4px rgba(0,0,0,0.5);
+}
+
+.modal-btn {
+    background: #27ae60;
+    font-size: 16px;
+    padding: 10px 30px;
+}
+.modal-btn:hover {
+    background: #2ecc71;
 }
 
 @media (max-width: 600px) {
     h1 {
-        font-size: 1.2rem;
-        margin-bottom: 10px;
+        font-size: 1.4rem;
+        margin-bottom: 15px;
     }
     .game-container {
-        padding: 10px;
+        padding: 15px 10px;
     }
     .controls {
         gap: 8px;
+        padding: 8px;
     }
     button, select {
         font-size: 12px;
-        padding: 6px 10px;
+        padding: 8px 12px;
+    }
+    .status {
+        width: 100%;
+        justify-content: center;
+        margin-bottom: 5px;
     }
 }
