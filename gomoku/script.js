@@ -33,9 +33,19 @@ function resizeCanvas() {
     // 设置合理的最小尺寸
     CANVAS_SIZE = Math.max(300, maxSize);
     
-    // 动态计算棋盘参数
-    canvas.width = CANVAS_SIZE;
-    canvas.height = CANVAS_SIZE;
+    // 获取设备像素比 (用于解决高清屏模糊问题)
+    const dpr = window.devicePixelRatio || 1;
+    
+    // 设置画布的 CSS 显示尺寸
+    canvas.style.width = CANVAS_SIZE + 'px';
+    canvas.style.height = CANVAS_SIZE + 'px';
+
+    // 设置画布内部的实际像素尺寸，并根据 dpr 缩放
+    canvas.width = CANVAS_SIZE * dpr;
+    canvas.height = CANVAS_SIZE * dpr;
+    
+    // 缩放画布的坐标系，使后续所有的绘图都按 CSS 尺寸来，不需要手动乘 dpr
+    ctx.scale(dpr, dpr);
     
     // 边缘留白约为单个格子的宽度，视觉上更协调
     MARGIN = CANVAS_SIZE / (BOARD_SIZE + 1); 
@@ -97,21 +107,41 @@ function redrawAllStones() {
     for (let i = 0; i < BOARD_SIZE; i++) {
         for (let j = 0; j < BOARD_SIZE; j++) {
             if (board[i][j] !== EMPTY) {
-                // 不画中心红点，只在当前落子画，这里简化为重画普通棋子
                 const cx = MARGIN + i * CELL_SIZE;
                 const cy = MARGIN + j * CELL_SIZE;
+                
                 ctx.beginPath();
                 ctx.arc(cx, cy, STONE_RADIUS, 0, 2 * Math.PI);
-                const gradient = ctx.createRadialGradient(cx - 2, cy - 2, 2, cx, cy, STONE_RADIUS);
+                
+                // 增加阴影，增强立体悬浮感
+                ctx.shadowOffsetX = 2;
+                ctx.shadowOffsetY = 2;
+                ctx.shadowBlur = 4;
+                ctx.shadowColor = 'rgba(0, 0, 0, 0.4)';
+
+                // 更逼真的高光渐变 (光源从左上角照来)
+                const gradient = ctx.createRadialGradient(
+                    cx - STONE_RADIUS * 0.3, cy - STONE_RADIUS * 0.3, 1, 
+                    cx, cy, STONE_RADIUS
+                );
+                
                 if (board[i][j] === BLACK) {
-                    gradient.addColorStop(0, '#666');
-                    gradient.addColorStop(1, '#000');
+                    gradient.addColorStop(0, '#666');   // 高光点
+                    gradient.addColorStop(0.3, '#222'); // 过渡
+                    gradient.addColorStop(1, '#050505'); // 边缘暗部
                 } else {
-                    gradient.addColorStop(0, '#fff');
-                    gradient.addColorStop(1, '#ccc');
+                    gradient.addColorStop(0, '#fff');   // 高光点
+                    gradient.addColorStop(0.5, '#f0f0f0'); // 过渡
+                    gradient.addColorStop(1, '#ccc');   // 边缘暗部
                 }
+                
                 ctx.fillStyle = gradient;
                 ctx.fill();
+                
+                // 重置阴影，避免影响后续其他元素的绘制
+                ctx.shadowOffsetX = 0;
+                ctx.shadowOffsetY = 0;
+                ctx.shadowBlur = 0;
             }
         }
     }
@@ -287,13 +317,9 @@ canvas.addEventListener('click', (e) => {
 
     const rect = canvas.getBoundingClientRect();
     
-    // 计算缩放比例 (实际显示的尺寸 vs 画布内在的像素尺寸)
-    const scaleX = canvas.width / rect.width;
-    const scaleY = canvas.height / rect.height;
-
-    // 获取相对于 Canvas 内部的精确坐标
-    const x = (e.clientX - rect.left) * scaleX;
-    const y = (e.clientY - rect.top) * scaleY;
+    // 获取相对于 Canvas 内部的精确坐标 (HDPI下画布坐标系已经等同于 CSS 尺寸)
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
 
     // 计算点击的是哪个交叉点
     const i = Math.round((x - MARGIN) / CELL_SIZE);
