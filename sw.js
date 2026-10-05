@@ -1,18 +1,22 @@
-const CACHE_NAME = 'classic-games-hub-v2';
+const CACHE_NAME = 'classic-games-hub-v3';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './manifest.json',
   './icon.svg',
-  './gomoku/index.html',
-  './gomoku/style.css',
-  './gomoku/script.js',
-  './snake/index.html',
-  './snake/style.css',
-  './snake/script.js',
-  './xiangqi/index.html',
-  './xiangqi/style.css',
-  './xiangqi/script.js'
+  './gobang/build/index.html',
+  './javascript-snake/src/index.html',
+  './javascript-snake/src/js/snake.js',
+  './javascript-snake/src/js/init.js',
+  './javascript-snake/src/css/main-snake.css',
+  './javascript-snake/src/css/common-snake.css',
+  './xqwlight/JavaScript/index.htm',
+  './xqwlight/JavaScript/board.js',
+  './xqwlight/JavaScript/book.js',
+  './xqwlight/JavaScript/cchess.js',
+  './xqwlight/JavaScript/position.js',
+  './xqwlight/JavaScript/search.js',
+  './xqwlight/background.gif'
 ];
 
 // 安装 Service Worker 并缓存资源

@@ -1,0 +1,188 @@
+import { createSlice, createAsyncThunk } from '@reduxjs/toolkit';
+import { board_size } from '../config';
+import { STATUS } from '../status';
+import { start, end, move, undo, loadGame } from '../bridge';
+
+export const startGame = createAsyncThunk('game/start', async ({ board_size, aiFirst, depth, openingBook }) => {
+  const data = await start(board_size, aiFirst, depth, openingBook, 'strength');
+  return data;
+});
+
+export const movePiece = createAsyncThunk('game/move', async ({ position, depth = 6, openingBook }) => {
+  const data = await move(position, depth, openingBook, 'strength');
+  return data;
+});
+
+export const endGame = createAsyncThunk('game/end', async (sessionId) => {
+  const data = await end();
+  return data;
+});
+
+export const undoMove = createAsyncThunk('game/undo', async (sessionId) => {
+  const data = await undo();
+  return data;
+});
+
+export const importGame = createAsyncThunk('game/import', async (gameData) => {
+  const data = await loadGame(gameData);
+  return {
+    ...data,
+    importedDepth: gameData.depth,
+    importedOpeningBook: gameData.openingBook,
+  };
+});
+
+const initBoard = Array.from({ length: board_size }).map(() => Array.from({ length: board_size }).fill(0));
+
+const initialState = {
+  board: initBoard,
+  aiFirst: true,
+  currentPlayer: null,
+  winner: null,
+  history: [],
+  status: STATUS.IDLE,
+  sessionId: null,
+  size: 15,
+  loading: false,
+  depth: 6, // 搜索深度
+  index: false, // 是否显示序号
+  score: 0,
+  scoreAssessment: { label: '开局阶段', detail: '等待开始对局', tone: 'even', confidence: 'low' },
+  path: [],
+  currentDepth: 0,
+  debug: false, // 显示调试面板
+  openingBook: true, // 启用开局库
+  openingBookDebug: {
+    enabled: true, hit: false, adopted: false, selectedMove: null, candidates: [],
+  },
+};
+
+export const gameSlice = createSlice({
+  name: 'game',
+  initialState,
+  reducers: {
+    tempMove: (state, action) => {
+      const p = action.payload
+      state.board[p[0]][p[1]] = state.currentPlayer;
+      state.history.push({
+        i: p[0],
+        j: p[1],
+        role: state.currentPlayer,
+      });
+    },
+    setAiFirst: (state, action) => {
+      state.aiFirst = action.payload;
+    },
+    setDepth: (state, action) => {
+      state.depth = Number(action.payload);
+    },
+    setIndex: (state, action) => {
+      state.index = action.payload;
+    },
+    setDebug: (state, action) => {
+      state.debug = action.payload;
+    },
+    setOpeningBook: (state, action) => {
+      state.openingBook = action.payload;
+    },
+  },
+  extraReducers: (builder) => {
+    builder
+      .addCase(startGame.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(startGame.fulfilled, (state, action) => {
+        state.board = action.payload.board;
+        state.currentPlayer = action.payload.current_player;
+        state.winner = action.payload.winner;
+        state.history = action.payload.history;
+        state.status = STATUS.GAMING;
+        state.sessionId = action.payload.session_id;
+        state.size = action.payload.size;
+        state.aiFirst = action.payload.aiFirst;
+        state.score = action.payload.score;
+        state.scoreAssessment = action.payload.scoreAssessment;
+        state.path = action.payload.bestPath;
+        state.currentDepth = action.payload.currentDepth;
+        state.openingBookDebug = action.payload.openingBookDebug;
+        state.loading = false;
+      })
+      .addCase(movePiece.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(movePiece.fulfilled, (state, action) => {
+        state.board = action.payload.board;
+        state.currentPlayer = action.payload.current_player;
+        state.winner = action.payload.winner;
+        state.history = action.payload.history;
+        state.score = action.payload.score;
+        state.scoreAssessment = action.payload.scoreAssessment;
+        state.path = action.payload.bestPath;
+        state.currentDepth = action.payload.currentDepth;
+        state.openingBookDebug = action.payload.openingBookDebug;
+        state.loading = false;
+        if (action.payload.winner !== 0) {
+          state.status = STATUS.IDLE;
+        }
+      })
+      .addCase(undoMove.pending, (state, action) => {
+        state.loading = true;
+      })
+      .addCase(undoMove.fulfilled, (state, action) => {
+        state.board = action.payload.board;
+        state.currentPlayer = action.payload.current_player;
+        state.winner = action.payload.winner;
+        state.history = action.payload.history;
+        state.score = action.payload.score;
+        state.scoreAssessment = action.payload.scoreAssessment;
+        state.path = action.payload.bestPath;
+        state.currentDepth = action.payload.currentDepth;
+        state.openingBookDebug = action.payload.openingBookDebug;
+        state.loading = false;
+      })
+      .addCase(importGame.pending, (state) => {
+        state.loading = true;
+      })
+      .addCase(importGame.fulfilled, (state, action) => {
+        state.board = action.payload.board;
+        state.currentPlayer = action.payload.current_player;
+        state.winner = action.payload.winner;
+        state.history = action.payload.history;
+        state.score = action.payload.score;
+        state.scoreAssessment = action.payload.scoreAssessment;
+        state.path = action.payload.bestPath;
+        state.currentDepth = action.payload.currentDepth;
+        state.openingBookDebug = action.payload.openingBookDebug;
+        state.size = action.payload.size;
+        state.aiFirst = action.payload.aiFirst;
+        state.sessionId = action.payload.session_id;
+        state.depth = action.payload.importedDepth ?? state.depth;
+        state.openingBook = action.payload.importedOpeningBook ?? state.openingBook;
+        state.loading = false;
+        state.status = action.payload.gameOver ? STATUS.IDLE : STATUS.GAMING;
+      })
+      .addCase(importGame.rejected, (state) => {
+        state.loading = false;
+      })
+      .addCase(endGame.fulfilled, (state) => {
+        state.board = initialState.board;
+        state.currentPlayer = initialState.currentPlayer;
+        state.winner = initialState.winner;
+        state.history = initialState.history;
+        state.status = initialState.status;
+        state.sessionId = initialState.sessionId;
+        state.size = initialState.size;
+        state.loading = initialState.loading;
+        state.depth = initialState.depth;
+        state.score = initialState.score;
+        state.scoreAssessment = initialState.scoreAssessment;
+        state.path = initialState.path;
+        state.currentDepth = initialState.currentDepth;
+        state.openingBookDebug = initialState.openingBookDebug;
+      });
+  },
+});
+export const {
+  tempMove, setAiFirst, setDepth, setIndex, setDebug, setOpeningBook,
+} = gameSlice.actions;
+export default gameSlice.reducer;
