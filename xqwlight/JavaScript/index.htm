@@ -1,7 +1,9 @@
-<html>
+<!doctype html>
+<html lang="zh-CN">
   <head>
-    <meta http-equiv="Content-Type" content="text/html; charset=gbk">
-    <title>ÏóÆåÐ¡Î×Ê¦</title>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <title>è±¡æ£‹å°å·«å¸ˆ</title>
     <script type="text/javascript" src="book.js"></script>
     <script type="text/javascript" src="position.js"></script>
     <script type="text/javascript" src="search.js"></script>
@@ -10,6 +12,19 @@
     <style type="text/css"><!--
 body {
   background: url(../background.gif);
+  margin: 0;
+  overflow-x: hidden;
+  touch-action: manipulation;
+}
+
+#container-shell {
+  width: min(521px, calc(100vw - 24px));
+  margin: 0 auto;
+  overflow: hidden;
+}
+
+#container {
+  transform-origin: top left;
 }
 
 span.td {
@@ -40,44 +55,54 @@ label {
   font-size: 14px;
 }
 
+@media (max-width: 700px) {
+  body > div:nth-of-type(1) { font-size: 24px !important; }
+  body > div:nth-of-type(3) { text-align: left !important; }
+  .board-td, .controls-td { display: block; width: 100% !important; margin: 0 auto 12px !important; }
+  .controls-td { max-width: 521px; }
+  .controls-td > div { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; text-align: left; }
+  .controls-td .label, .controls-td input.button, .controls-td select { width: 100%; box-sizing: border-box; }
+  .controls-td div[style*="height"] { display: none; }
+}
+
     --></style>
   </head>
   <body>
-    <div style="text-align:center;font-size:28px;font-family:ºÚÌå">ÏóÆåÐ¡Î×Ê¦</div>
+    <div style="text-align:center;font-size:28px;font-family:é»‘ä½“">è±¡æ£‹å°å·«å¸ˆ</div>
     <div style="height:16px"></div>
     <div style="text-align:center;white-space:nowrap">
-      <span class="td" style="margin-right:10px">
-        <div id="container"></div>
-      </span><span class="td" style="vertical-align:top;width:120px;"><div style="text-align:left">
-        <div class="label">Ë­ÏÈ×ß</div>
+      <span class="td board-td" style="margin-right:10px">
+        <div id="container-shell"><div id="container"></div></div>
+      </span><span class="td controls-td" style="vertical-align:top;width:120px;"><div style="text-align:left">
+        <div class="label">è°å…ˆèµ°</div>
         <div><select id="selMoveMode" size="3">
-          <option selected value="0">ÎÒÏÈ×ß</option>
-          <option value="1">µçÄÔÏÈ×ß</option>
-          <option value="2">²»ÓÃµçÄÔ</option>
+          <option selected value="0">æˆ‘å…ˆèµ°</option>
+          <option value="1">ç”µè„‘å…ˆèµ°</option>
+          <option value="2">ä¸ç”¨ç”µè„‘</option>
         </select></div>
-        <div class="label">ÏÈ×ßÈÃ×Ó</div>
+        <div class="label">å…ˆèµ°è®©å­</div>
         <div><select id="selHandicap" style="padding:0px">
-          <option selected value="0">²»ÈÃ×Ó</option>
-          <option value="1">ÈÃ×óÂí</option>
-          <option value="2">ÈÃË«Âí</option>
-          <option value="3">ÈÃ¾Å×Ó</option>
+          <option selected value="0">ä¸è®©å­</option>
+          <option value="1">è®©å·¦é©¬</option>
+          <option value="2">è®©åŒé©¬</option>
+          <option value="3">è®©ä¹å­</option>
         </select></div>
-        <div style="padding-top:2px"><input type="button" class="button" value="ÖØÐÂ¿ªÊ¼" onclick="restart_click()"></div>
-        <div style="padding-top:2px"><input type="button" class="button" value="»ÚÆå" onclick="retract_click()"></div>
+        <div style="padding-top:2px"><input type="button" class="button" value="é‡æ–°å¼€å§‹" onclick="restart_click()"></div>
+        <div style="padding-top:2px"><input type="button" class="button" value="æ‚”æ£‹" onclick="retract_click()"></div>
         <div style="height:12px"></div>
-        <div class="label">µçÄÔË®Æ½</div>
+        <div class="label">ç”µè„‘æ°´å¹³</div>
         <div><select id="selLevel" size="3" onchange="level_change()">
-          <option selected value="0">ÈëÃÅ</option>
-          <option value="1">ÒµÓà</option>
-          <option value="2">×¨Òµ</option>
+          <option selected value="0">å…¥é—¨</option>
+          <option value="1">ä¸šä½™</option>
+          <option value="2">ä¸“ä¸š</option>
         </select></div>
         <div style="height:12px"></div>
-        <div><input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked"><label for="chkAnimated">¶¯»­</label></input></div>
-        <div><input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)"><label for="chkSound">ÒôÐ§</label></input></div>
+        <div><input type="checkbox" class="checkbox" id="chkAnimated" checked onclick="board.animated = checked"><label for="chkAnimated">åŠ¨ç”»</label></input></div>
+        <div><input type="checkbox" class="checkbox" checked onclick="board.setSound(checked)"><label for="chkSound">éŸ³æ•ˆ</label></input></div>
         <div style="height:60px"></div>
-        <div class="label">²½Öè</div>
-        <div><select id="selMoveList" size="10" style="font-family:ËÎÌå" onchange="moveList_change()">
-          <option selected value="0">=== ¿ªÊ¼ ===</option>
+        <div class="label">æ­¥éª¤</div>
+        <div><select id="selMoveList" size="10" style="font-family:å®‹ä½“" onchange="moveList_change()">
+          <option selected value="0">=== å¼€å§‹ ===</option>
         </select></div>
       </div></span>
     </div>

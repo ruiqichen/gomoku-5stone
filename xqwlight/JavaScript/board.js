@@ -100,6 +100,12 @@ function Board(container, images, sounds) {
         this_.clickSquare(sq_);
       }
     } (sq);
+    img.ontouchend = function(sq_) {
+      return function(event) {
+        event.preventDefault();
+        this_.clickSquare(sq_);
+      }
+    } (sq);
     container.appendChild(img);
     this.imgSquares.push(img);
   }
@@ -116,6 +122,18 @@ function Board(container, images, sounds) {
   this.dummy = document.createElement("div");
   this.dummy.style.position = "absolute";
   container.appendChild(this.dummy);
+
+  var shell = container.parentElement;
+  var resizeBoard = function() {
+    if (!shell) return;
+    var scale = Math.min(1, shell.clientWidth / BOARD_WIDTH);
+    container.style.transform = "scale(" + scale + ")";
+    shell.style.width = Math.round(BOARD_WIDTH * scale) + "px";
+    shell.style.height = Math.round(BOARD_HEIGHT * scale) + "px";
+  };
+  window.addEventListener("resize", resizeBoard);
+  if (window.ResizeObserver) new ResizeObserver(resizeBoard).observe(shell);
+  resizeBoard();
 
   this.flushBoard();
 }
@@ -242,15 +260,15 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (vlRep > -WIN_VALUE && vlRep < WIN_VALUE) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("Ë«·½²»±ä×÷ºÍ£¬ÐÁ¿àÁË£¡");
+      alertDelay("åŒæ–¹ä¸å˜ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
     } else if (computerMove == (vlRep < 0)) {
       this.playSound("loss");
       this.result = RESULT_LOSS;
-      alertDelay("³¤´ò×÷¸º£¬Çë²»ÒªÆøÄÙ£¡");
+      alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œè¯·ä¸è¦æ°”é¦ï¼");
     } else {
       this.playSound("win");
       this.result = RESULT_WIN;
-      alertDelay("³¤´ò×÷¸º£¬×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+      alertDelay("é•¿æ‰“ä½œè´Ÿï¼Œç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
     }
     this.postAddMove2();
     this.busy = false;
@@ -268,7 +286,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!hasMaterial) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("Ë«·½¶¼Ã»ÓÐ½ø¹¥Æå×ÓÁË£¬ÐÁ¿àÁË£¡");
+      alertDelay("åŒæ–¹éƒ½æ²¡æœ‰è¿›æ”»æ£‹å­äº†ï¼Œè¾›è‹¦äº†ï¼");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -284,7 +302,7 @@ Board.prototype.postAddMove = function(mv, computerMove) {
     if (!captured) {
       this.playSound("draw");
       this.result = RESULT_DRAW;
-      alertDelay("³¬¹ý×ÔÈ»ÏÞ×Å×÷ºÍ£¬ÐÁ¿àÁË£¡");
+      alertDelay("è¶…è¿‡è‡ªç„¶é™ç€ä½œå’Œï¼Œè¾›è‹¦äº†ï¼");
       this.postAddMove2();
       this.busy = false;
       return;
@@ -310,7 +328,7 @@ Board.prototype.postAddMove2 = function() {
 }
 
 Board.prototype.postMate = function(computerMove) {
-  alertDelay(computerMove ? "ÇëÔÙ½ÓÔÙÀ÷£¡" : "×£ºØÄãÈ¡µÃÊ¤Àû£¡");
+  alertDelay(computerMove ? "è¯·å†æŽ¥å†åŽ‰ï¼" : "ç¥è´ºä½ å–å¾—èƒœåˆ©ï¼");
   this.postAddMove2();
   this.busy = false;
 }
