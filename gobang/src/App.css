@@ -48,7 +48,16 @@ button, select { font: inherit; }
 }
 @media (max-width: 520px) {
   .brand p { display: none; }
-  .board-panel { padding: 14px; border-radius: 20px; }
-  .app-header { margin-bottom: 16px; }
+  .brand h1 { font-size: 20px; }
+  .app-shell { width: calc(100% - 16px); padding-top: 10px; }
+  .board-panel { padding: 10px; border-radius: 16px; }
+  .app-header { margin-bottom: 12px; }
   .theme-toggle { padding: 8px 11px; }
+  .board-heading { margin-bottom: 10px; }
+  .side-panel, .board-panel { touch-action: manipulation; }
+}
+
+@media (pointer: coarse) {
+  .cell { touch-action: manipulation; -webkit-tap-highlight-color: transparent; }
+  button, select { min-height: 44px; }
 }

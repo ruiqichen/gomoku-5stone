@@ -60,6 +60,18 @@
     @media (pointer: coarse) {
       .snake-gamepad {
         display: grid;
+        grid-template-columns: repeat(3, 56px);
+        grid-template-rows: repeat(3, 56px);
+        gap: 8px;
+      }
+
+      @media (max-width: 380px) {
+        .snake-gamepad {
+          right: 8px;
+          grid-template-columns: repeat(3, 52px);
+          grid-template-rows: repeat(3, 52px);
+          gap: 6px;
+        }
       }
 
       /* keep Theme and Mode on one row and cap their width */
